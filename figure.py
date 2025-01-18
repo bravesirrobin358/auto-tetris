@@ -15,12 +15,21 @@ class Figure:
         [[1, 2, 5, 6]],
     ]
 
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.type = random.randint(0, len(self.figures) - 1)
-        self.color = random.randint(1, len(colors) - 1)
-        self.rotation = 0
+    def __init__(self, x=None, y=None, other_figure=None):
+        if other_figure:
+            self.x = other_figure.x
+            self.y = other_figure.y
+            self.type = other_figure.type
+            self.color = other_figure.color
+            self.rotation = other_figure.rotation
+        else:
+            self.x = x
+            self.y = y
+            self.type = random.randint(0, len(self.figures) - 1)
+            self.color = random.randint(1, len(colors) - 1)
+            self.rotation = 0
+
+
 
     def image(self):
         return self.figures[self.type][self.rotation]

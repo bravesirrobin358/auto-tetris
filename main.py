@@ -36,6 +36,8 @@ while not done:
         if game.state == "start":
             game.go_down()
 
+    #get_bad_ends(game.figure, )
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True

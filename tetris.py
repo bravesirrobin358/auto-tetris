@@ -27,15 +27,15 @@ class Tetris:
     def new_figure(self):
         self.figure = Figure(3, 0)
 
-    def intersects(self):
+    def intersects(self, figure):
         intersection = False
         for i in range(4):
             for j in range(4):
-                if i * 4 + j in self.figure.image():
-                    if i + self.figure.y > self.height - 1 or \
-                            j + self.figure.x > self.width - 1 or \
-                            j + self.figure.x < 0 or \
-                            self.field[i + self.figure.y][j + self.figure.x] > 0:
+                if i * 4 + j in figure.image():
+                    if i + figure.y > self.height - 1 or \
+                            j + figure.x > self.width - 1 or \
+                            j + figure.x < 0 or \
+                            self.field[i + figure.y][j + figure.x] > 0:
                         intersection = True
         return intersection
 
@@ -54,14 +54,14 @@ class Tetris:
         self.score += lines ** 2
 
     def go_space(self):
-        while not self.intersects():
+        while not self.intersects(self.figure):
             self.figure.y += 1
         self.figure.y -= 1
         self.freeze()
 
     def go_down(self):
         self.figure.y += 1
-        if self.intersects():
+        if self.intersects(self.figure):
             self.figure.y -= 1
             self.freeze()
 
@@ -72,17 +72,62 @@ class Tetris:
                     self.field[i + self.figure.y][j + self.figure.x] = self.figure.color
         self.break_lines()
         self.new_figure()
-        if self.intersects():
+        if self.intersects(self.figure):
             self.state = "gameover"
 
     def go_side(self, dx):
         old_x = self.figure.x
         self.figure.x += dx
-        if self.intersects():
+        if self.intersects(self.figure):
             self.figure.x = old_x
 
     def rotate(self):
         old_rotation = self.figure.rotation
         self.figure.rotate()
-        if self.intersects():
+        if self.intersects(self.figure):
             self.figure.rotation = old_rotation
+
+    def get_bad_ends(self):
+        copy_figure = Figure(other_figure=self.figure)
+        copy_figure.color = (128, 128, 128) # Gray
+        bad_end_layers = [[]]
+
+        for formation in range(len(copy_figure.figures())):
+            copy_figure.rotation = formation
+            for xcoor in range(10):
+                copy_figure.x = xcoor
+                for ycoor in range(20):
+                    copy_figure.y = ycoor
+
+                    if self.intersects(copy_figure):
+                            #Set to previous position
+                            copy_figure.y -= 1
+
+                        #Determine if its a bad end
+                        
+
+                        #Adding to layer if it's a bad end
+                        added = False
+                        for layer in range(len(bad_end_layers)):
+                            overlap = False
+                            for placement in bad_end_layers[layer]:
+                                if set(placement).intersection(set(copy_figure.figures[copy_figure.rotation])) != set():
+                                    overlap = True
+                                    break
+                            if not overlap:
+                                bad_end_layers[layer].append(copy_figure.figures[copy_figure.rotation])
+                                added = True
+                                break
+                        if not added:
+                            bad_end_layers.append([copy_figure.figures[copy_figure.rotation]])
+
+
+
+
+
+
+
+
+
+
+
