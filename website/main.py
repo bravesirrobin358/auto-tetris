@@ -41,7 +41,8 @@ def main():
         if not ret:
             st.write("Video Capture Ended")
             break
-        frame_bytes = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).tobytes()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_bytes = frame.tobytes()
         frame_base64_str = base64.encodebytes(frame).decode()
         frame_placeholder.image(frame,channels="RGB")
         if cv2.waitKey(1) & 0xFF == ord("q") or stop_button_pressed:
