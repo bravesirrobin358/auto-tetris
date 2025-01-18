@@ -3,3 +3,4 @@ streamlit-ace == 0.1.1
 pygame-ce == 2.5.2
 pillow == 11.1.0
 numpy == 2.2.1
+opencv-python == 4.11.0.86

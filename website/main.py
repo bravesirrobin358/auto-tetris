@@ -1,16 +1,17 @@
 import streamlit as st
 import base64
 import cv2
+from groq import Groq
+from api_key import API_KEY
 
 
-client: Groq = Groq(api_key=api_key)
+client: Groq = Groq(api_key=API_KEY)
 
-def request_inference(img: np.ndarray) -> None:
+def request_inference(base64_image: str) -> None:
     """
     Sends an image for inference, using Groq's API and prints the result.
     """
-    base64_image: str = encode_frame(img)
-    chat_completion: Any = client.chat.completions.create(
+    chat_completion = client.chat.completions.create(
         messages=[
             {
                 "role": "user",
@@ -43,7 +44,8 @@ def main():
             break
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_bytes = frame.tobytes()
-        frame_base64_str = base64.encodebytes(frame).decode()
+        frame_base64_str = frame_bytes.decode()
+        request_inference(frame_base64_str)
         frame_placeholder.image(frame,channels="RGB")
         if cv2.waitKey(1) & 0xFF == ord("q") or stop_button_pressed:
             break
