@@ -1,99 +1,89 @@
 examples = {
-"Default": """
-SCREEN.fill(pygame.Color("darkgreen"))
+    "Default": """
 
-pygame.draw.rect(
-    SCREEN, 
-    pygame.Color("blue"), 
-    pygame.Rect(0, 0, *SCREEN_SIZE), 
-    width=50, 
-    border_radius=150
-)
-""",
+# Initialize the game engine
+# pygame.init()
 
-"Hello World": """
-font = pygame.font.SysFont("Roboto", 75)
+# Define some colors
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GRAY = (128, 128, 128)
 
-font_surf = font.render("Hello World!", True, pygame.Color("red"))
+# size = (400, 500)
+# SCREEN = pygame.display.set_mode(size)
 
-font_pos_x = SCREEN_SIZE[0]//2 - font_surf.get_width() // 2
-font_pos_y = SCREEN_SIZE[1]//4 - font_surf.get_height() // 2
+# Loop until the user clicks the close button.
+done = False
+clock = pygame.time.Clock()
+fps = 25
+game = Tetris(20, 10)
+counter = 0
 
-for i in range(3):
-    font_surf = pygame.transform.rotozoom(font_surf, 10, 1)
-    SCREEN.blit(font_surf, (font_pos_x, font_pos_y + i*60))
-""",
+pressing_down = False
 
-"Gfxdraw":"""
-pygame.gfxdraw.rectangle(SCREEN, (50, 50, 200, 100), pygame.Color('white'))
+while not done:
+    if game.figure is None:
+        game.new_figure()
+    counter += 1
+    if counter > 100000:
+        counter = 0
 
-pygame.gfxdraw.ellipse(SCREEN, 400, 100, 100, 50, pygame.Color('red'))
+    if counter % (fps // game.level // 2) == 0 or pressing_down:
+        if game.state == "start":
+            game.go_down()
 
-polygon_points = [
-    (200, 200), 
-    (300, 250), 
-    (350, 350), 
-    (250, 400), 
-    (150, 350), 
-    (200, 250),
-]
-pygame.gfxdraw.filled_polygon(SCREEN, polygon_points, pygame.Color('green'))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                game.rotate()
+            if event.key == pygame.K_DOWN:
+                pressing_down = True
+            if event.key == pygame.K_LEFT:
+                game.go_side(-1)
+            if event.key == pygame.K_RIGHT:
+                game.go_side(1)
+            if event.key == pygame.K_SPACE:
+                game.go_space()
 
-pygame.gfxdraw.aacircle(SCREEN, 600, 300, 50, pygame.Color('blue'))
-pygame.gfxdraw.filled_circle(SCREEN, 600, 300, 50, pygame.Color('blue'))
-""",
+    if event.type == pygame.KEYUP:
+            if event.key == pygame.K_DOWN:
+                pressing_down = False
 
-"Gradient": """surface = pygame.Surface((255, 255))
+    SCREEN.fill(WHITE)
 
-ar = pygame.PixelArray(surface)
+    for i in range(game.height):
+        for j in range(game.width):
+            pygame.draw.rect(SCREEN, GRAY, [game.x + game.zoom * j, game.y + game.zoom * i, game.zoom, game.zoom], 1)
+            if game.field[i][j] > 0:
+                pygame.draw.rect(SCREEN, colors[game.field[i][j]],
+                                 [game.x + game.zoom * j + 1, game.y + game.zoom * i + 1, game.zoom - 2, game.zoom - 1])
 
-for y in range(255):
-    r, g, b = y, y, y
-    ar[:, y] = (r, g, b)
-    
-del ar
+    if game.figure is not None:
+        for i in range(4):
+            for j in range(4):
+                p = i * 4 + j
+                if p in game.figure.image():
+                    pygame.draw.rect(SCREEN, colors[game.figure.color],
+                                     [game.x + game.zoom * (j + game.figure.x) + 1,
+                                      game.y + game.zoom * (i + game.figure.y) + 1,
+                                      game.zoom - 2, game.zoom - 2])
 
-surface = pygame.transform.scale(surface, SCREEN_SIZE)
+    font = pygame.font.SysFont('Calibri', 25, True, False)
+    font1 = pygame.font.SysFont('Calibri', 65, True, False)
+    text = font.render("Score: " + str(game.score), True, BLACK)
+    text_game_over = font1.render("Game Over", True, (255, 125, 0))
+    text_game_over1 = font1.render("Press ESC", True, (255, 215, 0))
 
-SCREEN.blit(surface, (0, 0))
-""",
+    SCREEN.blit(text, [0, 0])
+    if game.state == "gameover":
+        SCREEN.blit(text_game_over, [20, 200])
+        SCREEN.blit(text_game_over1, [25, 265])
 
-"Numpy Pattern": """
-def generate_pattern(width, height, shift):
-    x = np.arange(width).reshape(1, width)
-    y = np.arange(height).reshape(height, 1)
+    pygame.display.flip()
+    clock.tick(fps)
 
-    layer1 = np.sin(x / 16.0 + shift)
-    layer2 = np.sin(y / 8.0 + shift)
-    layer3 = np.sin((x + y) / 16.0 + shift)
-    layer4 = np.sin(np.sqrt((x - width / 2) ** 2 + (y - height / 2) ** 2) / 8.0 + shift)
-
-    # Combine layers and normalize
-    arr = layer1 + layer2 + layer3 + layer4
-    arr = np.sin(arr * np.pi)
-
-    # Normalize to 0-255 and return as an integer array
-    arr = (arr + 1) * 128
-    return np.array(arr, dtype=np.uint8)
-
-
-shift = 0  # Set a constant value for the shift
-pattern_arr = generate_pattern(SCREEN_SIZE[0], SCREEN_SIZE[1], shift)
-
-# Map the array values to a Pygame surface
-surface = pygame.surfarray.make_surface(np.stack((pattern_arr,) * 3, axis=-1))
-surface = pygame.transform.smoothscale(surface, SCREEN_SIZE)
-
-SCREEN.blit(surface, (0, 0))
-""",
-
-"Uploaded Image": """
-scaled_img_surf = pygame.transform.scale_by(IMAGE_SURFACE, 0.75)
-
-blurred_img_surf = pygame.transform.gaussian_blur(scaled_img_surf, 5)
-
-inverted_blurred_img_surf = pygame.transform.invert(blurred_img_surf)
-
-SCREEN.blit(inverted_blurred_img_surf, (0,0))
+# pygame.quit()
 """
 }
