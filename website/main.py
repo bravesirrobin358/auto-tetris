@@ -19,7 +19,7 @@ def set_controls(parsed_response: str):
     global left_right_position, hands_above_head, arms_outside
     lines = parsed_response.split("\n")
     for line in lines:
-        parsed_line = line[3:].strip(" ()").lower()
+        parsed_line = line[3:].strip(" ").strip("()").lower()
         if line.startswith("1."):
             # Expected format: 1. (left, right, middle)
             if parsed_line in ["left, right, middle"]:
@@ -27,11 +27,11 @@ def set_controls(parsed_response: str):
         elif line.startswith("2."):
             # Expected format: 2. (yes, no)
             if parsed_line in ["yes", "no"]:
-                hands_above_head = line[3:].strip(" ()")
+                hands_above_head = line[3:].strip(" ").strip("()")
         elif line.startswith("3."):
             # Expected format: 3. (yes, no)
             if parsed_line in ["yes", "no"]:
-                arms_outside = line[3:].strip(" ()")
+                arms_outside = line[3:].strip(" ").strip("()")
 
 
 def parse_response(response: str) -> str:
@@ -55,7 +55,7 @@ def request_inference(base64_image: str) -> None:
 2. Does the person in the image have both hands above their head?
 3. Does the person in the image have both arms straight out to their sides (in a T pose)?
 
-Reply in the following format. NO OTHER FORMAT IS ACCEPTABLE!!! If you respond with anything other than the options below the program will fail.
+Reply in the following format. NO OTHER FORMAT IS ACCEPTABLE!!! IF YOU RESPOND WITH ANYTHING OTHER THAN THE OPTIONS BELOW THE PROGRAM WILL FAIL!!!!!!.
 
 1. (left, right, middle)
 2. (yes, no)
@@ -93,7 +93,7 @@ def main():
     st.title("Webcam Display Steamlit App")
     st.caption("Powered by OpenCV, Streamlit")
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     frame_placeholder = st.empty()
     stop_button_pressed = st.button("Stop")
 
