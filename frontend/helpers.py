@@ -57,8 +57,8 @@ def request_inference(base64_image: str, model):
     # fork_detections = data[data[:, 5] == 42]
     # if len(fork_detections) > 0:
     #     rotate = True
-    
-    if (700 <= y_max <= 710):
+
+    if 700 <= y_max <= 710:
         rotate = True
 
     send_control_signal(direction, rotate, slam)
@@ -99,6 +99,7 @@ def request_inference_threaded(base64_image: str, model) -> None:
             model,
         ),
     ).start()
+
 
 def start_game_threaded() -> None:
     threading.Thread(target=send_start_game).start()

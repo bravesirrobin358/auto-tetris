@@ -7,7 +7,7 @@ from PIL import Image
 import requests
 from helpers import (
     request_inference_threaded,
-    send_start_game,
+    start_game_threaded,
     send_restart_game,
     send_click_event,
 )
