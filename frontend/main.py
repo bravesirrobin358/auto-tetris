@@ -5,7 +5,7 @@ import torch
 import warnings
 from PIL import Image
 import requests
-from inference import request_inference_threaded
+from helpers import request_inference_threaded, send_start_game, send_restart_game
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -25,8 +25,32 @@ model = get_pretrained_model()
 
 
 def main():
-    st.title("Webcam Display Steamlit App")
-    st.caption("Powered by OpenCV, Streamlit")
+    st.title("Tetris Fitness Game :weight_lifter:")
+
+    if "playing" not in st.session_state:
+        st.session_state.playing = False
+
+    if st.session_state.playing:
+        playing()
+    else:
+        start_menu()
+
+
+def start_menu():
+    st.write("Welcome to Sweatris, an AI powered Tetris Game to get you moving!")
+    start_game = st.button("start_game")
+
+    if start_game:
+        st.session_state.playing = True
+        send_start_game()
+
+
+def playing():
+
+    restart_button = st.button("restart_game")
+
+    if restart_button:
+        send_restart_game()
 
     # Define columns once, outside any loop
     col1, col2 = st.columns(2)

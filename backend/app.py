@@ -31,6 +31,9 @@ def newFrame():
         return {"b64frame": base64.b64encode(CHOSEN_FRAME.tobytes()).decode()}
     else:
         return {"b64frame": None}
+    
+
+
 
 
 def game():
