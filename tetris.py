@@ -20,6 +20,7 @@ class Tetris:
         self.state = "start"
         self.bad_ends = [[]]
         self.bad_ends_index = 0
+        self.holes = []
         for i in range(height):
             new_line = []
             for j in range(width):
@@ -73,11 +74,14 @@ class Tetris:
             self.field[x][y] = self.figure.color
         self.break_lines()
         self.new_figure()
+
         for layer in self.bad_ends:
             for brick in layer:
                 for bx,by in brick:
                     if self.field[bx][by] in [7,8]:
                         self.field[bx][by] = 0
+
+        self.holes = is_bad_brick(self.field)
         self.bad_ends_index = 0
         self.bad_ends = self.get_bad_ends()
 
@@ -134,7 +138,7 @@ class Tetris:
                             default_field_copy[x][y] = (128,128,128)
                         #Determine if it's a bad end and add it to the list
                         bad_end_layers = add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor) \
-                            if is_bad_brick(default_field_copy) else bad_end_layers
+                            if is_bad_brick(default_field_copy,self.holes) else bad_end_layers
 
                         # Remove temp
                         for x, y in figure_to_field(copy_figure,xcoor,ycoor):
@@ -152,7 +156,8 @@ def figure_to_field(figure,x,y):
 
     return field_placement
 
-def is_bad_brick(default_field_copy):
+def is_bad_brick(default_field_copy, old_holes=()):
+    holes = []
     for row in range(len(default_field_copy)):
         for sq in range(len(default_field_copy[row])):
             surrounded = []
@@ -167,9 +172,9 @@ def is_bad_brick(default_field_copy):
             if sq != 9:
                 surrounded.append(default_field_copy[row][sq + 1])
 
-            if 0 not in surrounded and default_field_copy[row][sq] == 0:
-                return True
-    return False
+            if 0 not in surrounded and default_field_copy[row][sq] == 0 and (row,sq) not in old_holes:
+                holes.append((row,sq))
+    return holes
 
 def add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor):
     added = False
