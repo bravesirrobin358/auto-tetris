@@ -3,8 +3,6 @@ import base64
 import cv2
 import numpy as np
 import requests
-import asyncio
-import aiohttp
 
 from pynput.mouse import Listener
 import logging
