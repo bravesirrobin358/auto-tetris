@@ -42,9 +42,9 @@ def request_inference(base64_image: str, model):
     slam = False
 
     # Determine direction
-    if center_x < 500:
+    if center_x < width * 0.4:
         direction = "left"
-    elif center_x > 700:
+    elif center_x > width * 0.5:
         direction = "right"
     else:
         direction = "middle"
@@ -57,8 +57,7 @@ def request_inference(base64_image: str, model):
     # fork_detections = data[data[:, 5] == 42]
     # if len(fork_detections) > 0:
     #     rotate = True
-
-    if 700 <= y_max <= 710:
+    if (700 <= y_max <= 710):
         rotate = True
 
     send_control_signal(direction, rotate, slam)
@@ -78,13 +77,8 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
 
-def send_click_event():
-    requests.get("http://127.0.0.1:5000/click")
-
-
-async def send_start_game():
-    async with aiohttp.ClientSession() as session:
-        asyncio.create_task(session.get("http://127.0.0.1:5000/start"))
+def send_start_game():
+    requests.get("http://127.0.0.1:5000/start")
 
 
 def send_restart_game():
@@ -99,7 +93,6 @@ def request_inference_threaded(base64_image: str, model) -> None:
             model,
         ),
     ).start()
-
 
 def start_game_threaded() -> None:
     threading.Thread(target=send_start_game).start()
