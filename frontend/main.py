@@ -30,7 +30,10 @@ model = get_pretrained_model()
 
 
 def main():
-    st.title("Tetris Fitness Game :weight_lifter:")
+    st.markdown(
+        "<h1 style='text-align: center;'>Sweatris</h1>",
+        unsafe_allow_html=True,
+    )
 
     if "playing" not in st.session_state:
         st.session_state.playing = False
@@ -42,12 +45,15 @@ def main():
 
 
 def start_menu():
-    st.write("Welcome to Sweatris, an AI powered Tetris Game to get you moving!")
+    st.markdown(
+        "<p style='text-align: center; font-size: 18px;'>Welcome to Sweatris, an AI powered Tetris Game to get you moving!</p>",
+        unsafe_allow_html=True,
+    )
     start_game = st.button("Start Game")
 
     if start_game:
         st.session_state.playing = True
-        send_start_game()
+        start_game_threaded()
         st.rerun()
 
 
@@ -64,13 +70,20 @@ def playing():
         send_click_event()
 
     # Define columns once, outside any loop
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, vertical_alignment="center")
+
+    # Set vertical alignment to center
+    col1.subheader("Webcam Feed")
+    col1.empty()
+
+    col2.subheader("Game Display")
+    col2.empty()
 
     # Placeholders for each column
     webcam_placeholder = col1.empty()
     game_placeholder = col2.empty()
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
 
     frame_count = 0
 
@@ -79,7 +92,7 @@ def playing():
         if not ret:
             st.write("Video Capture Ended")
             break
-
+        frame = cv2.flip(frame, 1)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         success, encoded_image = cv2.imencode(".jpg", frame)
 

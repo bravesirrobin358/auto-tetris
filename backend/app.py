@@ -35,7 +35,7 @@ def newFrame():
     if CHOSEN_FRAME is not None:
         return {"b64frame": base64.b64encode(CHOSEN_FRAME.tobytes()).decode()}
     else:
-        return {"b64frame": None}
+        raise InterruptedError
 
 
 @app.route("/control", methods=["POST"])
@@ -94,7 +94,7 @@ def game():
     # Loop until the user clicks the close button.
     done = False
     clock = pygame.time.Clock()
-    fps = 25
+    fps = 5
     game = Tetris(20, 10)
     counter = 0
 
@@ -117,6 +117,7 @@ def game():
             game.go_side(1)
         if can_restart:
             game.__init__(20, 10)
+            can_restart = False
 
         screen.fill(WHITE)
         game.bad_ends_index += 0.1
