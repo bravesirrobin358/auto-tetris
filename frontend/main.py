@@ -57,7 +57,7 @@ def image_to_base64(image_path):
 
 
 def main():
-    img_path = Path("frontend/logo.png")
+    img_path = Path("logo.png")
     st.markdown(
         f"""
     <div style="display: flex; justify-content: center;">
