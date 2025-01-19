@@ -9,7 +9,7 @@ Welcome to **Sweatris a Fitness-Themed Interactive Tetris Game**, a web-based ap
 ## Features
 
 ### 🎮 Gameplay
-- Classic Tetris mechanics enhanced with move recommendation algorithms for smarter play.
+- Classic Tetris mechanics enhanced with move recommendation algorithms  to avoid disadvantageous outcomes.
 - Real-time interactivity using your body movements to control the game.
 
 ### 📸 Object Detection
