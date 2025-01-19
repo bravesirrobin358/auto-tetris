@@ -94,7 +94,7 @@ def game():
     # Loop until the user clicks the close button.
     done = False
     clock = pygame.time.Clock()
-    fps = 5
+    fps = 8
     game = Tetris(20, 10)
     counter = 0
 

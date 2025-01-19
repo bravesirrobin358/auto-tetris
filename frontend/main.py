@@ -9,7 +9,6 @@ from helpers import (
     request_inference_threaded,
     start_game_threaded,
     send_restart_game,
-    send_click_event,
 )
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -17,6 +16,29 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 st.set_page_config(
     page_title="Streamlit Tetris App", layout="wide", page_icon=":video_game:"
 )
+
+with st.sidebar:
+    st.write("**Sweatris Controls**")
+    
+    st.write("- Move left and right in the camera frame to move the falling piece.")
+    st.write("- Crouch to slam the piece downwards.")
+    st.write("- Click to rotate.")
+    
+    if not st.session_state.get("playing", False):
+        start_game = st.button("Start Game")
+        
+        if start_game:
+            st.session_state.playing = True
+            start_game_threaded()
+            st.rerun()
+            
+    else:
+        restart_button = st.button("Restart Game")
+        if restart_button:
+            send_restart_game()
+        
+        
+    
 
 RATE_LIMITER = 15
 
@@ -45,18 +67,6 @@ def main():
 
     if st.session_state.playing:
         playing()
-    else:
-        start_menu()
-
-
-def start_menu():
-    
-    start_game = st.button("Start Game")
-
-    if start_game:
-        st.session_state.playing = True
-        start_game_threaded()
-        st.rerun()
 
 
 def playing():
@@ -65,14 +75,15 @@ def playing():
     if restart_button:
         send_restart_game()
 
+
     # Define columns once, outside any loop
     col1, col2 = st.columns(2, vertical_alignment="center")
 
     # Set vertical alignment to center
-    col1.subheader("Webcam Feed")
+    col1.subheader("Webcam")
     col1.empty()
 
-    col2.subheader("Game Display")
+    col2.subheader("Game")
     col2.empty()
 
     # Placeholders for each column
