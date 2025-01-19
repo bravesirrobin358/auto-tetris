@@ -2,86 +2,60 @@ import streamlit as st
 import cv2
 import base64
 import threading
-from groq import Groq
-from api_key import API_KEY
+import torch
+import numpy as np
+import warnings
 
-RATE_LIMITER = 50
+warnings.filterwarnings("ignore", category=FutureWarning)
 
-# Global variables to be updated asynchronously
-left_right_position = None
-hands_above_head = None
-arms_outside = None
+st.set_page_config(page_title="Streamlit Tetris App")
 
-client: Groq = Groq(api_key=API_KEY)
+RATE_LIMITER = 10
 
 
-def set_controls(parsed_response: str):
-    global left_right_position, hands_above_head, arms_outside
-    lines = parsed_response.split("\n")
-    for line in lines:
-        parsed_line = line[3:].strip(" ()").lower()
-        if line.startswith("1."):
-            # Expected format: 1. (left, right, middle)
-            if parsed_line in ["left, right, middle"]:
-                left_right_position = parsed_line
-        elif line.startswith("2."):
-            # Expected format: 2. (yes, no)
-            if parsed_line in ["yes", "no"]:
-                hands_above_head = line[3:].strip(" ()")
-        elif line.startswith("3."):
-            # Expected format: 3. (yes, no)
-            if parsed_line in ["yes", "no"]:
-                arms_outside = line[3:].strip(" ()")
+# Load the YOLO model once (e.g., YOLOv5s)
+@st.cache_resource
+def get_pretrained_model():
+    # Create a database session object that points to the URL.
+    return torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
 
 
-def parse_response(response: str) -> str:
-    lines = response.splitlines()
-    # Remove trailing whitespace from each line
-    lines = [line.rstrip().lower() for line in lines]
-    # Keep only lines that start with '1', '2', or '3'
-    lines = [line for line in lines if line.startswith(("1", "2", "3"))]
-    return "\n".join(lines)
+model = get_pretrained_model()
 
 
-def request_inference(base64_image: str) -> None:
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": """1. Is the person in the image standing on the left, right, or middle?
-2. Does the person in the image have both hands above their head?
-3. Does the person in the image have both arms straight out to their sides (in a T pose)?
+def request_inference(base64_image: str) -> str:
+    """
+    Uses a YOLO model to detect a person in the image and returns 'left', 'right', or 'middle'
+    based on the person's center relative to the image width. Assumes one human in the image.
+    """
+    # Decode Base64 -> NumPy Array
+    decoded_bytes = base64.b64decode(base64_image)
+    img_array = np.frombuffer(decoded_bytes, np.uint8)
+    frame = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
 
-Reply in the following format. NO OTHER FORMAT IS ACCEPTABLE!!! If you respond with anything other than the options below the program will fail.
+    # Inference
+    results = model(frame)
 
-1. (left, right, middle)
-2. (yes, no)
-3. (yes, no)
+    # Convert to NumPy
+    data = results.xyxy[0].cpu().numpy()
 
-2 and 3 are mutually exclusive
+    # Filter detections for humans (class 0 = 'person' for YOLOv5)
+    person_detections = data[data[:, 5] == 0]
+    if len(person_detections) == 0:
+        return "middle"  # default fallback if no human is detected
 
-If there is no person, or the person is not fully visible in the image (from at least the hips up) respond "None"
+    # Take the first detected person (assuming only one)
+    x_min, y_min, x_max, y_max, conf, cls = person_detections[0]
+    width = frame.shape[1]
+    center_x = (x_min + x_max) / 2.0
 
-""",
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{base64_image}",
-                        },
-                    },
-                ],
-            }
-        ],
-        model="llama-3.2-11b-vision-preview",
-    )
-    parsed_response = parse_response(chat_completion.choices[0].message.content)
-    print(parsed_response)
-    print()
-    set_controls(parsed_response)
+    # Determine position
+    if center_x < width / 3.0:
+        return "left"
+    elif center_x > 2.0 * width / 3.0:
+        return "right"
+    else:
+        return "middle"
 
 
 def request_inference_threaded(base64_image: str) -> None:
@@ -89,7 +63,6 @@ def request_inference_threaded(base64_image: str) -> None:
 
 
 def main():
-    st.set_page_config(page_title="Streamlit WebCam App")
     st.title("Webcam Display Steamlit App")
     st.caption("Powered by OpenCV, Streamlit")
 
@@ -111,7 +84,9 @@ def main():
         if success and frame_count == RATE_LIMITER:
             frame_count = 0
             frame_base64_str = base64.b64encode(encoded_image).decode("utf-8")
-            request_inference_threaded(frame_base64_str)
+            # Use the threaded inference call
+            position = request_inference(frame_base64_str)
+            print(position)
 
         frame_placeholder.image(frame, channels="RGB")
 
