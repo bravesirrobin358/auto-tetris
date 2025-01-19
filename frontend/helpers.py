@@ -42,9 +42,9 @@ def request_inference(base64_image: str, model):
     slam = False
 
     # Determine direction
-    if center_x < width * 0.4:
+    if center_x < 500:
         direction = "left"
-    elif center_x > width * 0.5:
+    elif center_x > 700:
         direction = "right"
     else:
         direction = "middle"
@@ -57,8 +57,6 @@ def request_inference(base64_image: str, model):
     # fork_detections = data[data[:, 5] == 42]
     # if len(fork_detections) > 0:
     #     rotate = True
-    if (700 <= y_max <= 710):
-        rotate = True
 
     send_control_signal(direction, rotate, slam)
 
@@ -76,6 +74,9 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
     if response.status_code != 200:
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
+
+def send_click_event():
+    requests.get("http://127.0.0.1:5000/click")
 
 def send_start_game():
     requests.get("http://127.0.0.1:5000/start")
