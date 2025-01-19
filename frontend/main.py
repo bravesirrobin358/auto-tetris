@@ -10,6 +10,7 @@ from helpers import (
     start_game_threaded,
     send_restart_game,
 )
+from pathlib import Path
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -19,26 +20,24 @@ st.set_page_config(
 
 with st.sidebar:
     st.write("**Sweatris Controls**")
-    
+
     st.write("- Move left and right in the camera frame to move the falling piece.")
     st.write("- Crouch to slam the piece downwards.")
     st.write("- Click to rotate.")
-    
+
     if not st.session_state.get("playing", False):
         start_game = st.button("Start Game")
-        
+
         if start_game:
             st.session_state.playing = True
             start_game_threaded()
             st.rerun()
-            
+
     else:
         restart_button = st.button("Restart Game")
         if restart_button:
             send_restart_game()
-        
-        
-    
+
 
 RATE_LIMITER = 15
 
@@ -51,12 +50,27 @@ def get_pretrained_model():
 model = get_pretrained_model()
 
 
+@st.cache_data
+def image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode()
+
+
 def main():
+    img_path = Path("frontend/logo.png")
+    st.markdown(
+        f"""
+    <div style="display: flex; justify-content: center;">
+        <img src="data:image/png;base64,{image_to_base64(img_path)}" alt="Centered Image" style="width: 80px; height: auto;">
+    </div>
+    """,
+        unsafe_allow_html=True,
+    )
     st.markdown(
         "<h1 style='text-align: center;'>Sweatris</h1>",
         unsafe_allow_html=True,
     )
-    
+
     st.markdown(
         "<p style='text-align: center; font-size: 18px;'>Welcome to Sweatris, an AI powered Tetris Game to get you moving!</p>",
         unsafe_allow_html=True,
@@ -88,7 +102,7 @@ def playing():
     cap = cv2.VideoCapture(1)
 
     frame_count = 0
-    
+
     st.audio("song.mp3", loop=True, autoplay=True)
     while cap.isOpened():
         ret, frame = cap.read()
