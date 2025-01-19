@@ -64,11 +64,6 @@ def playing():
     if restart_button:
         send_restart_game()
 
-    rotate_button = st.button("Rotate")
-
-    if rotate_button:
-        send_click_event()
-
     # Define columns once, outside any loop
     col1, col2 = st.columns(2, vertical_alignment="center")
 
@@ -83,7 +78,7 @@ def playing():
     webcam_placeholder = col1.empty()
     game_placeholder = col2.empty()
 
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 
     frame_count = 0
 

@@ -111,6 +111,7 @@ def game():
 
         if ROTATE:
             game.rotate()
+            ROTATE = False
         if DIRECTION == "left":
             game.go_side(-1)
         if DIRECTION == "right":
@@ -118,6 +119,7 @@ def game():
         if can_restart:
             game.__init__(20, 10)
             can_restart = False
+
 
         screen.fill(WHITE)
         game.bad_ends_index += 0.1

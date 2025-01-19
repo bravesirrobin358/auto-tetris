@@ -6,8 +6,22 @@ import requests
 import asyncio
 import aiohttp
 
+from pynput.mouse import Listener
+import logging
+
+logging.basicConfig(filename="mouse_log.txt", level=logging.DEBUG, format='%(asctime)s: %(message)s')
+
+rotate = False
+
+def on_click(x, y, button, pressed):
+    global rotate
+    if pressed:
+        logging.info('Mouse clicked at ({0}, {1}) with {2}'.format(x, y, button))
+        rotate = True
+
 
 def request_inference(base64_image: str, model):
+    global rotate
     """
     Uses a YOLO model to detect a person in the image and returns 'left', 'right', or 'middle'
     based on the person's center relative to the image width. Assumes one human in the image.
@@ -38,7 +52,6 @@ def request_inference(base64_image: str, model):
     center_x = (x_min + x_max) / 2.0
 
     direction = ""
-    rotate = False
     slam = False
 
     # Determine direction
@@ -53,12 +66,8 @@ def request_inference(base64_image: str, model):
     if y_min > height / 2.0:
         slam = True
 
-    # Check for forks (class 42 in YOLO)
-    # fork_detections = data[data[:, 5] == 42]
-    # if len(fork_detections) > 0:
-    #     rotate = True
-
-    send_control_signal(direction, rotate, slam)
+    send_control_signal(direction,rotate, slam)
+    rotate = False
 
 
 def send_control_signal(direction: str, rotate: bool, slam: bool):
@@ -75,10 +84,10 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
 
-def send_click_event():
-    requests.get("http://127.0.0.1:5000/click")
 
 def send_start_game():
+    listener = Listener(on_click=on_click)
+    listener.start()
     requests.get("http://127.0.0.1:5000/start")
 
 
