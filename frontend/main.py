@@ -92,8 +92,6 @@ def playing():
             decoded = base64.b64decode(response)
             frame_img = Image.frombytes("RGB", (400, 500), decoded)
             game_placeholder.image(frame_img)
-        else:
-            st.error("No response")
 
     cap.release()
     cv2.destroyAllWindows()
