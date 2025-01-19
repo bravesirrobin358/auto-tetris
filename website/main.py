@@ -51,10 +51,13 @@ def request_inference(base64_image: str) -> str:
 
     # Determine position
     if center_x < width / 3.0:
+        print("left")
         return "left"
     elif center_x > 2.0 * width / 3.0:
+        print("right")
         return "right"
     else:
+        print("middle")
         return "middle"
 
 
@@ -85,8 +88,8 @@ def main():
             frame_count = 0
             frame_base64_str = base64.b64encode(encoded_image).decode("utf-8")
             # Use the threaded inference call
-            position = request_inference(frame_base64_str)
-            print(position)
+            position = request_inference_threaded(frame_base64_str)
+
 
         frame_placeholder.image(frame, channels="RGB")
 
