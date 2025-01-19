@@ -34,6 +34,11 @@ def main():
         "<h1 style='text-align: center;'>Sweatris</h1>",
         unsafe_allow_html=True,
     )
+    
+    st.markdown(
+        "<p style='text-align: center; font-size: 18px;'>Welcome to Sweatris, an AI powered Tetris Game to get you moving!</p>",
+        unsafe_allow_html=True,
+    )
 
     if "playing" not in st.session_state:
         st.session_state.playing = False
@@ -45,10 +50,7 @@ def main():
 
 
 def start_menu():
-    st.markdown(
-        "<p style='text-align: center; font-size: 18px;'>Welcome to Sweatris, an AI powered Tetris Game to get you moving!</p>",
-        unsafe_allow_html=True,
-    )
+    
     start_game = st.button("Start Game")
 
     if start_game:
@@ -60,7 +62,6 @@ def start_menu():
 def playing():
 
     restart_button = st.button("Restart Game")
-
     if restart_button:
         send_restart_game()
 
@@ -86,7 +87,8 @@ def playing():
     cap = cv2.VideoCapture(1)
 
     frame_count = 0
-
+    
+    st.audio("song.mp3", loop=True, autoplay=True)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
