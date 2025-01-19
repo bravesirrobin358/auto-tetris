@@ -44,7 +44,7 @@ def request_inference(base64_image: str, model):
     # Determine direction
     if center_x < width / 3.0:
         direction = "left"
-    elif center_x > 2.0 * width / 3.0:
+    elif center_x > 2* width / 3.0:
         direction = "right"
     else:
         direction = "middle"
@@ -54,8 +54,11 @@ def request_inference(base64_image: str, model):
         slam = True
 
     # Check for forks (class 42 in YOLO)
-    fork_detections = data[data[:, 5] == 42]
-    if len(fork_detections) > 0:
+    # fork_detections = data[data[:, 5] == 42]
+    # if len(fork_detections) > 0:
+    #     rotate = True
+    
+    if (700 <= y_max <= 710):
         rotate = True
 
     send_control_signal(direction, rotate, slam)
