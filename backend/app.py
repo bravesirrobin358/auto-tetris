@@ -28,7 +28,6 @@ DIRECTION = None
 SLAM = None
 ROTATE = None
 can_restart = False
-can_start = False
 
 
 @app.route("/", methods=["GET"])
@@ -69,8 +68,8 @@ def restart_game():
 
 @app.route("/start", methods=["GET"])
 def start_game():
-    global can_start
-    can_start = True
+    # Start Tetris on main thread
+    game()
     return {
         "status": "success",
         "message": "started",
@@ -78,7 +77,7 @@ def start_game():
 
 
 def game():
-    global CHOSEN_FRAME, DIRECTION, SLAM, ROTATE, can_restart, can_start
+    global CHOSEN_FRAME, DIRECTION, SLAM, ROTATE, can_restart
     # Initialize the game engine
     pygame.init()
 
@@ -99,7 +98,7 @@ def game():
     game = Tetris(20, 10)
     counter = 0
 
-    while not done and can_start:
+    while not done:
         if game.figure is None:
             game.new_figure()
         counter += 1
@@ -204,5 +203,3 @@ if __name__ == "__main__":
         target=app.run, kwargs={"debug": False, "use_reloader": False}
     )
     flask_thread.start()
-    # Start Tetris on main thread
-    game()
