@@ -4,5 +4,5 @@ pygame-ce == 2.5.2
 pillow == 11.1.0
 numpy == 2.2.1
 opencv-python == 4.11.0.86
-groq == 0.15.0
 Flask == 3.1.0
+torch == 2.5.1

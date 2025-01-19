@@ -1,4 +1,0 @@
-opencv-python
-streamlit
-groq
-torch

@@ -1,5 +1,5 @@
 import random
-from shared import colors
+
 
 class Figure:
     x = 0
@@ -30,8 +30,6 @@ class Figure:
             # TODO, self.color = random.randint(1, len(colors) - 1)
             self.color = random.randint(1, 6)
             self.rotation = 0
-
-
 
     def image(self):
         return self.figures[self.type][self.rotation]

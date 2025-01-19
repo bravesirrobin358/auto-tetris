@@ -1,5 +1,6 @@
 from figure import Figure
 
+
 class Tetris:
     def __init__(self, height, width):
         self.level = 2
@@ -12,7 +13,7 @@ class Tetris:
         self.y = 60
         self.zoom = 20
         self.figure = None
-    
+
         self.height = height
         self.width = width
         self.field = []
@@ -34,10 +35,12 @@ class Tetris:
         for i in range(4):
             for j in range(4):
                 if i * 4 + j in figure.image():
-                    if i + figure.y > self.height - 1 or \
-                            j + figure.x > self.width - 1 or \
-                            j + figure.x < 0 or \
-                            7 > self.field[i + figure.y][j + figure.x] > 0:
+                    if (
+                        i + figure.y > self.height - 1
+                        or j + figure.x > self.width - 1
+                        or j + figure.x < 0
+                        or 7 > self.field[i + figure.y][j + figure.x] > 0
+                    ):
                         return True
         return False
 
@@ -53,7 +56,7 @@ class Tetris:
                 for i1 in range(i, 1, -1):
                     for j in range(self.width):
                         self.field[i1][j] = self.field[i1 - 1][j]
-        self.score += lines ** 2
+        self.score += lines**2
 
     def go_space(self):
         while not self.intersects(self.figure):
@@ -68,17 +71,16 @@ class Tetris:
             self.figure.y -= 1
             self.freeze()
 
-
     def freeze(self):
-        for x,y in figure_to_field(self.figure,self.figure.x,self.figure.y):
+        for x, y in figure_to_field(self.figure, self.figure.x, self.figure.y):
             self.field[x][y] = self.figure.color
         self.break_lines()
         self.new_figure()
 
         for layer in self.bad_ends:
             for brick in layer:
-                for bx,by in brick:
-                    if self.field[bx][by] in [7,8]:
+                for bx, by in brick:
+                    if self.field[bx][by] in [7, 8]:
                         self.field[bx][by] = 0
 
         self.holes = is_bad_brick(self.field)
@@ -105,14 +107,13 @@ class Tetris:
         for i in range(4):
             for j in range(4):
                 if i * 4 + j in figure.image():
-                    if j + figure.x > self.width - 1 or \
-                            j + figure.x < 0:
+                    if j + figure.x > self.width - 1 or j + figure.x < 0:
                         intersection = True
         return intersection
 
     def get_bad_ends(self):
         copy_figure = Figure(other_figure=self.figure)
-        copy_figure.color = 0 # Gray
+        copy_figure.color = 0  # Gray
         default_field_copy = [i for i in self.field]
         bad_end_layers = [[]]
 
@@ -125,7 +126,7 @@ class Tetris:
                     if self.horizontal_out_of_bounds(copy_figure):
                         continue
                     if self.intersects(copy_figure):
-                        #Set to previous position
+                        # Set to previous position
                         ycoor -= 1
                         copy_figure.y = ycoor
                         if self.intersects(copy_figure):
@@ -133,21 +134,24 @@ class Tetris:
                             break
 
                         # Temp set
-                        to_field = figure_to_field(copy_figure,xcoor,ycoor)
+                        to_field = figure_to_field(copy_figure, xcoor, ycoor)
                         for x, y in to_field:
-                            default_field_copy[x][y] = (128,128,128)
-                        #Determine if it's a bad end and add it to the list
-                        bad_end_layers = add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor) \
-                            if is_bad_brick(default_field_copy,self.holes) else bad_end_layers
+                            default_field_copy[x][y] = (128, 128, 128)
+                        # Determine if it's a bad end and add it to the list
+                        bad_end_layers = (
+                            add_to_bad_layers(bad_end_layers, copy_figure, xcoor, ycoor)
+                            if is_bad_brick(default_field_copy, self.holes)
+                            else bad_end_layers
+                        )
 
                         # Remove temp
-                        for x, y in figure_to_field(copy_figure,xcoor,ycoor):
-                            if default_field_copy[x][y] == (128,128,128):
+                        for x, y in figure_to_field(copy_figure, xcoor, ycoor):
+                            if default_field_copy[x][y] == (128, 128, 128):
                                 default_field_copy[x][y] = 0
         return bad_end_layers
 
 
-def figure_to_field(figure,x,y):
+def figure_to_field(figure, x, y):
     field_placement = []
     for i in range(4):
         for j in range(4):
@@ -155,6 +159,7 @@ def figure_to_field(figure,x,y):
                 field_placement.append((i + y, j + x))
 
     return field_placement
+
 
 def is_bad_brick(default_field_copy, old_holes=()):
     holes = []
@@ -172,16 +177,26 @@ def is_bad_brick(default_field_copy, old_holes=()):
             if sq != 9:
                 surrounded.append(default_field_copy[row][sq + 1])
 
-            if 0 not in surrounded and default_field_copy[row][sq] == 0 and (row,sq) not in old_holes:
-                holes.append((row,sq))
+            if (
+                0 not in surrounded
+                and default_field_copy[row][sq] == 0
+                and (row, sq) not in old_holes
+            ):
+                holes.append((row, sq))
     return holes
 
-def add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor):
+
+def add_to_bad_layers(bad_end_layers, copy_figure, xcoor, ycoor):
     added = False
     for layer in range(len(bad_end_layers)):
         overlap = False
         for placement in bad_end_layers[layer]:
-            if set(tuple(placement)).intersection(set(tuple(figure_to_field(copy_figure, xcoor, ycoor)))) != set():
+            if (
+                set(tuple(placement)).intersection(
+                    set(tuple(figure_to_field(copy_figure, xcoor, ycoor)))
+                )
+                != set()
+            ):
                 overlap = True
                 break
         if not overlap:
@@ -191,11 +206,3 @@ def add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor):
     if not added:
         bad_end_layers.append([figure_to_field(copy_figure, xcoor, ycoor)])
     return bad_end_layers
-
-
-
-
-
-
-
-
