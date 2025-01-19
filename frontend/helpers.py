@@ -3,6 +3,8 @@ import base64
 import cv2
 import numpy as np
 import requests
+import asyncio
+import aiohttp
 
 
 def request_inference(base64_image: str, model):
@@ -73,8 +75,9 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
 
-def send_start_game():
-    requests.get("http://127.0.0.1:5000/start")
+async def send_start_game():
+    async with aiohttp.ClientSession() as session:
+        asyncio.create_task(session.get("http://127.0.0.1:5000/start"))
 
 
 def send_restart_game():
