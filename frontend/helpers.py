@@ -75,9 +75,8 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
 
-async def send_start_game():
-    async with aiohttp.ClientSession() as session:
-        asyncio.create_task(session.get("http://127.0.0.1:5000/start"))
+def send_start_game():
+    requests.get("http://127.0.0.1:5000/start")
 
 
 def send_restart_game():
@@ -92,3 +91,6 @@ def request_inference_threaded(base64_image: str, model) -> None:
             model,
         ),
     ).start()
+
+def start_game_threaded() -> None:
+    threading.Thread(target=send_start_game).start()
