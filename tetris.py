@@ -18,6 +18,8 @@ class Tetris:
         self.field = []
         self.score = 0
         self.state = "start"
+        self.bad_ends = [[]]
+        self.bad_ends_index = 0
         for i in range(height):
             new_line = []
             for j in range(width):
@@ -28,16 +30,15 @@ class Tetris:
         self.figure = Figure(3, 0)
 
     def intersects(self, figure):
-        intersection = False
         for i in range(4):
             for j in range(4):
                 if i * 4 + j in figure.image():
                     if i + figure.y > self.height - 1 or \
                             j + figure.x > self.width - 1 or \
                             j + figure.x < 0 or \
-                            self.field[i + figure.y][j + figure.x] > 0:
-                        intersection = True
-        return intersection
+                            7 > self.field[i + figure.y][j + figure.x] > 0:
+                        return True
+        return False
 
     def break_lines(self):
         lines = 0
@@ -55,6 +56,7 @@ class Tetris:
 
     def go_space(self):
         while not self.intersects(self.figure):
+
             self.figure.y += 1
         self.figure.y -= 1
         self.freeze()
@@ -65,13 +67,20 @@ class Tetris:
             self.figure.y -= 1
             self.freeze()
 
+
     def freeze(self):
-        for i in range(4):
-            for j in range(4):
-                if i * 4 + j in self.figure.image():
-                    self.field[i + self.figure.y][j + self.figure.x] = self.figure.color
+        for x,y in figure_to_field(self.figure,self.figure.x,self.figure.y):
+            self.field[x][y] = self.figure.color
         self.break_lines()
         self.new_figure()
+        for layer in self.bad_ends:
+            for brick in layer:
+                for bx,by in brick:
+                    if self.field[bx][by] in [7,8]:
+                        self.field[bx][by] = 0
+        self.bad_ends_index = 0
+        self.bad_ends = self.get_bad_ends()
+
         if self.intersects(self.figure):
             self.state = "gameover"
 
@@ -87,42 +96,96 @@ class Tetris:
         if self.intersects(self.figure):
             self.figure.rotation = old_rotation
 
+    def horizontal_out_of_bounds(self, figure):
+        intersection = False
+        for i in range(4):
+            for j in range(4):
+                if i * 4 + j in figure.image():
+                    if j + figure.x > self.width - 1 or \
+                            j + figure.x < 0:
+                        intersection = True
+        return intersection
+
     def get_bad_ends(self):
         copy_figure = Figure(other_figure=self.figure)
-        copy_figure.color = (128, 128, 128) # Gray
+        copy_figure.color = 0 # Gray
+        default_field_copy = [i for i in self.field]
         bad_end_layers = [[]]
 
-        for formation in range(len(copy_figure.figures())):
+        for formation in range(len(copy_figure.figures[copy_figure.type])):
             copy_figure.rotation = formation
             for xcoor in range(10):
                 copy_figure.x = xcoor
                 for ycoor in range(20):
                     copy_figure.y = ycoor
-
+                    if self.horizontal_out_of_bounds(copy_figure):
+                        continue
                     if self.intersects(copy_figure):
-                            #Set to previous position
-                            copy_figure.y -= 1
+                        #Set to previous position
+                        ycoor -= 1
+                        copy_figure.y = ycoor
+                        if self.intersects(copy_figure):
+                            # Meaning we skip the intersects that wouldn't be possible to achieve anyway
+                            break
 
-                        #Determine if its a bad end
-                        
+                        # Temp set
+                        to_field = figure_to_field(copy_figure,xcoor,ycoor)
+                        for x, y in to_field:
+                            default_field_copy[x][y] = (128,128,128)
+                        #Determine if it's a bad end and add it to the list
+                        bad_end_layers = add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor) \
+                            if is_bad_brick(default_field_copy) else bad_end_layers
 
-                        #Adding to layer if it's a bad end
-                        added = False
-                        for layer in range(len(bad_end_layers)):
-                            overlap = False
-                            for placement in bad_end_layers[layer]:
-                                if set(placement).intersection(set(copy_figure.figures[copy_figure.rotation])) != set():
-                                    overlap = True
-                                    break
-                            if not overlap:
-                                bad_end_layers[layer].append(copy_figure.figures[copy_figure.rotation])
-                                added = True
-                                break
-                        if not added:
-                            bad_end_layers.append([copy_figure.figures[copy_figure.rotation]])
+                        # Remove temp
+                        for x, y in figure_to_field(copy_figure,xcoor,ycoor):
+                            if default_field_copy[x][y] == (128,128,128):
+                                default_field_copy[x][y] = 0
+        return bad_end_layers
 
 
+def figure_to_field(figure,x,y):
+    field_placement = []
+    for i in range(4):
+        for j in range(4):
+            if i * 4 + j in figure.image():
+                field_placement.append((i + y, j + x))
 
+    return field_placement
+
+def is_bad_brick(default_field_copy):
+    for row in range(len(default_field_copy)):
+        for sq in range(len(default_field_copy[row])):
+            surrounded = []
+            if row != 0:
+                surrounded.append(default_field_copy[row - 1][sq])
+
+            if row != 19:
+                surrounded.append(default_field_copy[row + 1][sq])
+            if sq != 0:
+                surrounded.append(default_field_copy[row][sq - 1])
+
+            if sq != 9:
+                surrounded.append(default_field_copy[row][sq + 1])
+
+            if 0 not in surrounded and default_field_copy[row][sq] == 0:
+                return True
+    return False
+
+def add_to_bad_layers(bad_end_layers,copy_figure,xcoor,ycoor):
+    added = False
+    for layer in range(len(bad_end_layers)):
+        overlap = False
+        for placement in bad_end_layers[layer]:
+            if set(tuple(placement)).intersection(set(tuple(figure_to_field(copy_figure, xcoor, ycoor)))) != set():
+                overlap = True
+                break
+        if not overlap:
+            bad_end_layers[layer].append(figure_to_field(copy_figure, xcoor, ycoor))
+            added = True
+            break
+    if not added:
+        bad_end_layers.append([figure_to_field(copy_figure, xcoor, ycoor)])
+    return bad_end_layers
 
 
 

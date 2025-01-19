@@ -36,7 +36,7 @@ while not done:
         if game.state == "start":
             game.go_down()
 
-    #get_bad_ends(game.figure, )
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -60,12 +60,29 @@ while not done:
                 pressing_down = False
 
     screen.fill(WHITE)
+    game.bad_ends_index += 0.1
+    if game.bad_ends_index >= len(game.bad_ends): game.bad_ends_index = 0
+    layer_shown = game.bad_ends[int(game.bad_ends_index)]
+    for brick in layer_shown:
+        # Time to display layer
+        if game.bad_ends_index % 0.3 == 0:
+            # For each tile in the brick
+            for x, y in brick:
+                # Replace with hint tile if not occupied by active falling brick
+                if game.field[x][y] == 0:
+                    game.field[x][y] = 7
+        else:
+            # Replace hint tiles with white tile so they don't linger,
+            for x, y in brick:
+                if game.field[x][y] == 7:
+                    game.field[x][y] = 0
+
+
 
     for i in range(game.height):
         for j in range(game.width):
             pygame.draw.rect(screen, GRAY, [game.x + game.zoom * j, game.y + game.zoom * i, game.zoom, game.zoom], 1)
-            if game.field[i][j] > 0:
-                pygame.draw.rect(screen, colors[game.field[i][j]],
+            pygame.draw.rect(screen, colors[game.field[i][j]],
                                  [game.x + game.zoom * j + 1, game.y + game.zoom * i + 1, game.zoom - 2, game.zoom - 1])
 
     if game.figure is not None:
