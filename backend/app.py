@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from PIL import Image
 import threading
 import base64
@@ -24,6 +24,11 @@ colors = [
     (255, 255, 255),
 ]
 
+DIRECTION = None
+SLAM = None
+ROTATE = None
+can_restart = False
+can_start = False
 
 @app.route("/", methods=["GET"])
 def newFrame():
@@ -35,9 +40,27 @@ def newFrame():
 
 
 
+@app.route("/control", methods=["POST"])
+def control():
+    global DIRECTION, SLAM, ROTATE
+    if request.method == "POST":
+        response = request.get_json()
+        DIRECTION = response["direction"]
+        SLAM = response["slam"]
+        ROTATE = response["rotate"]
+
+@app.route("/restart", methods=["GET"])
+def restart_game():
+    global can_restart
+    can_restart = True
+
+@app.route("/start", methods=["GET"])
+def start_game():
+    global can_start
+    can_start = True
 
 def game():
-    global CHOSEN_FRAME
+    global CHOSEN_FRAME, DIRECTION, SLAM, ROTATE, can_restart, can_start
     # Initialize the game engine
     pygame.init()
 
@@ -58,39 +81,25 @@ def game():
     game = Tetris(20, 10)
     counter = 0
 
-    pressing_down = False
-
-    while not done:
+    while not done and can_start:
         if game.figure is None:
             game.new_figure()
         counter += 1
         if counter > 100000:
             counter = 0
 
-        if counter % (fps // game.level // 2) == 0 or pressing_down:
+        if counter % (fps // game.level // 2) == 0 or SLAM:
             if game.state == "start":
                 game.go_down()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                done = True
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    game.rotate()
-                if event.key == pygame.K_DOWN:
-                    pressing_down = True
-                if event.key == pygame.K_LEFT:
-                    game.go_side(-1)
-                if event.key == pygame.K_RIGHT:
-                    game.go_side(1)
-                if event.key == pygame.K_SPACE:
-                    game.go_space()
-                if event.key == pygame.K_ESCAPE:
-                    game.__init__(20, 10)
-
-        if event.type == pygame.KEYUP:
-            if event.key == pygame.K_DOWN:
-                pressing_down = False
+        
+        if ROTATE:
+            game.rotate()
+        if DIRECTION == "left":
+            game.go_side(-1)
+        if DIRECTION == "right":
+            game.go_side(1)
+        if can_restart:
+            game.__init__(20, 10)
 
         screen.fill(WHITE)
         game.bad_ends_index += 0.1

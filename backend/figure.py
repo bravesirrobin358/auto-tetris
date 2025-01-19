@@ -25,9 +25,7 @@ class Figure:
         else:
             self.x = x
             self.y = y
-            # TODO, return  self.type = random.randint(0, len(self.figures) - 1)
-            self.type = 1
-            # TODO, self.color = random.randint(1, len(colors) - 1)
+            self.type = random.randint(0, len(self.figures) - 1)
             self.color = random.randint(1, 6)
             self.rotation = 0
 
