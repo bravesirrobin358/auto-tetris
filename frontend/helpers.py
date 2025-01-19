@@ -42,9 +42,9 @@ def request_inference(base64_image: str, model):
     slam = False
 
     # Determine direction
-    if center_x < width / 3.0:
+    if center_x < 500:
         direction = "left"
-    elif center_x > 2* width / 3.0:
+    elif center_x > 700:
         direction = "right"
     else:
         direction = "middle"
