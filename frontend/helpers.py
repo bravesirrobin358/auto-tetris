@@ -75,6 +75,10 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
 
+def send_click_event():
+    requests.get("http://127.0.0.1:5000/click")
+
+
 async def send_start_game():
     async with aiohttp.ClientSession() as session:
         asyncio.create_task(session.get("http://127.0.0.1:5000/start"))

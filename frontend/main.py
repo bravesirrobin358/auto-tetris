@@ -5,7 +5,12 @@ import torch
 import warnings
 from PIL import Image
 import requests
-from helpers import request_inference_threaded, send_start_game, send_restart_game
+from helpers import (
+    request_inference_threaded,
+    send_start_game,
+    send_restart_game,
+    send_click_event,
+)
 
 warnings.filterwarnings("ignore", category=FutureWarning)
 
@@ -52,6 +57,11 @@ def playing():
 
     if restart_button:
         send_restart_game()
+
+    rotate_button = st.button("Rotate")
+
+    if rotate_button:
+        send_click_event()
 
     # Define columns once, outside any loop
     col1, col2 = st.columns(2)
