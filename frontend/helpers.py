@@ -69,9 +69,7 @@ def send_control_signal(direction: str, rotate: bool, slam: bool):
     )
 
     # check the response
-    if response.status_code == 200:
-        print("Control signal sent successfully:", response.json())
-    else:
+    if response.status_code != 200:
         print(f"Failed to send control signal: {response.status_code}, {response.text}")
 
 

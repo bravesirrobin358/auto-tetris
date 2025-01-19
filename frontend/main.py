@@ -38,16 +38,17 @@ def main():
 
 def start_menu():
     st.write("Welcome to Sweatris, an AI powered Tetris Game to get you moving!")
-    start_game = st.button("start_game")
+    start_game = st.button("Start Game")
 
     if start_game:
         st.session_state.playing = True
         send_start_game()
+        st.rerun()
 
 
 def playing():
 
-    restart_button = st.button("restart_game")
+    restart_button = st.button("Restart Game")
 
     if restart_button:
         send_restart_game()
@@ -59,12 +60,11 @@ def playing():
     webcam_placeholder = col1.empty()
     game_placeholder = col2.empty()
 
-    stop_button_pressed = st.button("Stop")
     cap = cv2.VideoCapture(0)
 
     frame_count = 0
 
-    while cap.isOpened() and not stop_button_pressed:
+    while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             st.write("Video Capture Ended")
@@ -83,7 +83,7 @@ def playing():
         # Update the left column placeholder
         webcam_placeholder.image(frame, channels="RGB")
 
-        if cv2.waitKey(1) & 0xFF == ord("q") or stop_button_pressed:
+        if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
         # Update the right column placeholder
@@ -92,6 +92,8 @@ def playing():
             decoded = base64.b64decode(response)
             frame_img = Image.frombytes("RGB", (400, 500), decoded)
             game_placeholder.image(frame_img)
+        else:
+            st.error("No response")
 
     cap.release()
     cv2.destroyAllWindows()

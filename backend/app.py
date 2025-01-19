@@ -30,14 +30,13 @@ ROTATE = None
 can_restart = False
 can_start = False
 
+
 @app.route("/", methods=["GET"])
 def newFrame():
     if CHOSEN_FRAME is not None:
         return {"b64frame": base64.b64encode(CHOSEN_FRAME.tobytes()).decode()}
     else:
         return {"b64frame": None}
-    
-
 
 
 @app.route("/control", methods=["POST"])
@@ -45,19 +44,38 @@ def control():
     global DIRECTION, SLAM, ROTATE
     if request.method == "POST":
         response = request.get_json()
-        DIRECTION = response["direction"]
-        SLAM = response["slam"]
-        ROTATE = response["rotate"]
+        if response:
+            print(response)
+            DIRECTION = response.get("direction")
+            SLAM = response.get("slam")
+            ROTATE = response.get("rotate")
+            return {
+                "status": "success",
+                "message": "Controls updated successfully",
+            }, 200
+        else:
+            return {"status": "error", "message": "Invalid JSON payload"}, 400
+
 
 @app.route("/restart", methods=["GET"])
 def restart_game():
     global can_restart
     can_restart = True
+    return {
+        "status": "success",
+        "message": "restarted",
+    }, 200
+
 
 @app.route("/start", methods=["GET"])
 def start_game():
     global can_start
     can_start = True
+    return {
+        "status": "success",
+        "message": "started",
+    }, 200
+
 
 def game():
     global CHOSEN_FRAME, DIRECTION, SLAM, ROTATE, can_restart, can_start
@@ -91,7 +109,7 @@ def game():
         if counter % (fps // game.level // 2) == 0 or SLAM:
             if game.state == "start":
                 game.go_down()
-        
+
         if ROTATE:
             game.rotate()
         if DIRECTION == "left":
