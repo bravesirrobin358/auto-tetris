@@ -29,10 +29,12 @@ Welcome to **Sweatris a Fitness-Themed Interactive Tetris Game**, a web-based ap
 
 ## Usage
 
-1. Open the Streamlit app in your browser.
-2. Allow camera access.
-3. Follow the on-screen instructions to start the game.
-4. Move your body to control Tetris pieces and enjoy your workout!
+1. Install the requirements using requirements.txt
+2. Run "run.py"
+3. Open the Streamlit app in your browser.
+4. Allow camera access.
+5. Follow the on-screen instructions to start the game.
+6. Move your body to control Tetris pieces and enjoy your workout!
 
 ## License
 
